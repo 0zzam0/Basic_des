@@ -6,7 +6,6 @@
 #include <stdint.h>
 #include <Windows.h>
 
-int permutation_bit(char blocktext, int permut_table[]);
 
 int IP_table[] = {
     58, 50, 42, 34, 26, 18, 10, 2,
@@ -130,7 +129,7 @@ void strToHex(char text[], uint8_t* data) {
     return 0;
 }
 
-void initial_permutation(uint8_t* data, uint8_t* out)
+void initialPermutation(uint8_t* data)
 {
     int index1 = 0;
     int bit1 = 0;
@@ -148,29 +147,112 @@ void initial_permutation(uint8_t* data, uint8_t* out)
         //바뀔 비트 index
         index2 = i / 4;
         bit2 = i % 4;
-        temp1 = (data[index1] & (8 >> bit1)) >> (3 - bit1);
-        temp2 = (data[index2] & (8 >> bit2)) >> (3 - bit2);
+        //temp1 = 바꿀 비트 , temp2 = 바뀔 비트 값
+        temp1 = (data[index1] & (0x08 >> bit1)) >> (3 - bit1);
+        temp2 = (data[index2] & (0x08 >> bit2)) >> (3 - bit2);
         //plain text의 1번째 비트 값 추출해서 바꾸기
-        printf("%d %d", temp1, temp2);
 
+        //1은 OR 0은 AND
         if (temp1 != temp2) {
-            
-            out[index2] |=  (data[index1] & (8 >> bit1));
+            if (temp1 == 1) {
+                data[index2] |= (0x08 >> bit2);
+            }
+            else {
+                data[index2] & (0x07 >> bit2);
+            }
         }
 
-        
     }
-
-    
-
-
-
     return 0;
 }
 
+void makeBlock32(uint8_t* data, uint8_t* L, uint8_t* R) {
+    int i = 0;
+    for (i = 0; i < 16; i++) {
+        if (i < 8 ){
+            L[i] = data[i];
+        }
+        else {
+            R[i-8] = data[i];
+        }
+    }
+
+    //i = 0;
+    //for (i = 0; i < 8; i++) {
+    //    printf("%hhx", L[i]);
+    //}
+    //printf("\n");
+    //i = 0;
+    //for (i = 0; i < 8; i++) {
+    //    printf("%hhx", R[i]);
+    //}
+}
+void extensionPermutation(uint8_t* R, uint8_t* R_E) {
+    int index1 = 0;
+    int bit1 = 0;
+    int index2 = 0;
+    int bit2 = 0;
+    int temp1 = 0;
+    int temp2 = 0;
+
+
+    for (int i = 0; i < 48; i++) {
+        //바꿀 비트 index
+        index1 = (E_table[i] - 1) / 4;
+        bit1 = (E_table[i] - 1) % 4;
+        //바뀔 비트 index
+        index2 = i / 4;
+        bit2 = i % 4;
+        //temp1 = 바꿀 비트 , temp2 = 바뀔 비트 값
+        temp1 = (R[index1] & (0x08 >> bit1)) >> (3 - bit1);
+        temp2 = (R[index2] & (0x08 >> bit2)) >> (3 - bit2);
+        //plain text의 1번째 비트 값 추출해서 바꾸기
+
+        //1은 OR 0은 AND
+        if (temp1 != temp2) {
+            if (temp1 == 1) {
+                R_E[index2] |= (0x08 >> bit2);
+            }
+            else {
+                R_E[index2] & (0x07 >> bit2);
+            }
+        }
+
+    }
+    return 0;
+}
+
+void XOR(uint8_t* bits1, uint8_t* bits2, uint8_t* result, int size) {
+    int i = 0;
+    for (i = 0; i < size; i++) {
+        result[i] = bits1[i] ^ bits2[i];
+    }
+}
+
+void s_box(uint8_t* R, uint8_t* bits) {
+
+}
+
+void changeBits(uint8_t* L, uint8_t* R) {
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    uint8_t temp[8] = { 0 };
+    for (i = 0; i < 8; i++) {
+        temp[i] = L[i];
+    }
+
+    for (j = 0; j < 8; j++) {
+        L[j] = R[j];
+    }
+
+    for (k = 0; k < 8; k++) {
+        R[k] = temp[k];
+    }
+}
 int main()
 {
-    
+
     char plain_text[20] = "02468aceeca86420";
     unsigned int key = 0x0f1571c947d9e859;
     unsigned char block_text[8] = { 0 };
@@ -182,25 +264,34 @@ int main()
     //printf("%x", key);
     //Sleep(1000);
     //system("cls");                                   //키 입력 후 콘솔 초기화
-   
+
     //input plainText
     //printf("Input plain text : \n");
     //scanf("%s", &plain_text);
-    
-   
+
+    int  i = 0;
+    //IP
     uint8_t text[16] = { 0 };
     uint8_t* data = text;                                       //포인터에 배열할당
 
-    uint8_t data_out[16] = { 0 };
-    uint8_t* out = data_out;
+    //쪼개기
+    uint8_t L_block[10] = { 0 };
+    uint8_t R_block[10] = { 0 };
+    uint8_t* L = L_block ;
+    uint8_t* R = R_block;
+
+    //E
+    uint8_t R_Extention[20] = { 0 };
+    uint8_t* R_E = R_Extention;
 
     strToHex(plain_text, data);
+    initialPermutation(data);
+    makeBlock32(data, L, R);
+    extensionPermutation(R,R_E);
 
-    initial_permutation(data, out);
-
-    int  i = 0;
-    for (i = 0; i < 16; i++) {
-        printf("%hhx", out[i]);
+    printf("\n");
+    for (i = 0; i < 12; i++) {
+        printf("%hhx", R_E[i]);
     }
     
 
