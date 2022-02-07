@@ -356,7 +356,7 @@ void PCpermutation(uint8_t* key, uint8_t* R_key) {
     return 0;
 }
 
-void shiftKey(uint8_t* L_k, uint8_t* R_k, int i) {
+void shiftKey(uint8_t* L_k, uint8_t* R_k, int count) {
     unsigned long long temp1 = 0x0000000000000000;
     unsigned long long temp2 = 0x0000000000000000;
 
@@ -364,11 +364,17 @@ void shiftKey(uint8_t* L_k, uint8_t* R_k, int i) {
     for (int i = 0; i < 8; i++) {
         temp1 |= (L_k[i] << 56 - (4 * i));
     }
+    printf("%016llx\n", temp1); //합친 값
+    unsigned long long tmp = (temp1 << shift_key[count])/(1<<28);
+    printf("%016llx\n", tmp);   //오버 비트
+    temp1 = temp1 << shift_key[count];
+    printf("%016llx\n", temp1); //시프트
+    temp1 = temp1 | tmp;    //뒤에 붙임
 
     for (int i = 0; i < 8; i++) {
         temp2 |= (R_k[i] << 56 - (4 * i));
     }
-    printf("%llx", temp1);
+    printf("%016llx\n", temp1);
     printf("%d", sizeof(temp1));
 
 }
