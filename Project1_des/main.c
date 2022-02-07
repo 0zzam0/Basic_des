@@ -124,6 +124,9 @@ int PC_2[48]= {
     44, 49, 39, 56, 34, 53,
     46, 42, 50, 36, 29, 32 };
 
+int shift_key[16] = {
+    1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1 };
+
 void strToHex(char text[], uint8_t* data) {
     //16진수로 변환
 
@@ -149,7 +152,7 @@ void strToHex(char text[], uint8_t* data) {
     return 0;
 }
 
-void initialPermutation(uint8_t* data)
+void initialPermutation(uint8_t* data, uint8_t* out)
 {
     int index1 = 0;
     int bit1 = 0;
@@ -163,7 +166,7 @@ void initialPermutation(uint8_t* data)
         //plain text의 58번째(7) 비트 값 mask로 추출하기
         //바꿀 비트 index
         index1 = (IP_table[i] - 1) / 4;
-        bit1 = (IP_table[i] - 1)% 4;
+        bit1 = (IP_table[i] - 1) % 4;
         //바뀔 비트 index
         index2 = i / 4;
         bit2 = i % 4;
@@ -173,18 +176,31 @@ void initialPermutation(uint8_t* data)
         //plain text의 1번째 비트 값 추출해서 바꾸기
 
         //1은 OR 0은 AND
-        if (temp1 != temp2) {
-            if (temp1 == 1) {
-                data[index2] |= (0x08 >> bit2);
-            }
-            else {
-                data[index2] & (0x07 >> bit2);
-            }
+
+        /*if (temp1 == 1) {
+            data[index2] |= (0x08 >> bit2);
         }
+        else if(temp1 == 0) {
+            data[index2] & (0xF7 >> bit2);
+        }
+        printf("%d", data[index2]);*/
+
+
+        if (temp1) {
+            out[index2] |= (0x08 >> bit2);
+        }
+        
+    }
+
+    for (int k = 0; k < 16; k++) {
+        printf("%hhx", out[k]);
 
     }
+
     return 0;
 }
+
+
 
 void makeBlock32(uint8_t* data, uint8_t* L, uint8_t* R) {
     int i = 0;
@@ -197,15 +213,27 @@ void makeBlock32(uint8_t* data, uint8_t* L, uint8_t* R) {
         }
     }
 
-    //i = 0;
-    //for (i = 0; i < 8; i++) {
-    //    printf("%hhx", L[i]);
-    //}
-    //printf("\n");
-    //i = 0;
-    //for (i = 0; i < 8; i++) {
-    //    printf("%hhx", R[i]);
-    //}
+}
+
+void makeBlock28(uint8_t* key, uint8_t* L_k, uint8_t* R_k) {
+    int i = 0;
+    for (i = 0; i < 14; i++) {
+        if (i < 7) {
+            L_k[i] = key[i];
+        }
+        else {
+            R_k[i - 7] = key[i];
+        }
+    }
+    printf("좌 : ");
+    for (int j = 0; j < 7; j++) {
+        printf("%hhx", L_k[j]);
+    }
+    printf("우 : ");
+    for (int j = 0; j < 7; j++) {
+        printf("%hhx", R_k[j]);
+    }
+    printf("\n");
 }
 void extensionPermutation(uint8_t* R, uint8_t* R_E) {
     int index1 = 0;
@@ -229,14 +257,23 @@ void extensionPermutation(uint8_t* R, uint8_t* R_E) {
         //plain text의 1번째 비트 값 추출해서 바꾸기
 
         //1은 OR 0은 AND
-        if (temp1 != temp2) {
+        /*if (temp1 != temp2) {
             if (temp1 == 1) {
                 R_E[index2] |= (0x08 >> bit2);
             }
             else {
                 R_E[index2] & (0x07 >> bit2);
             }
+        }*/
+        if (temp1) {
+            R_E[index2] |= (0x08 >> bit2);
         }
+
+        
+
+    }
+    for (int k = 0; k < 12; k++) {
+        printf("%hhx", R_E[k]);
 
     }
     return 0;
@@ -271,6 +308,71 @@ void changeBits(uint8_t* L, uint8_t* R) {
         R[k] = temp[k];
     }
 }
+
+void PCpermutation(uint8_t* key, uint8_t* R_key) {
+    int index1 = 0;
+    int bit1 = 0;
+    int index2 = 0;
+    int bit2 = 0;
+    int temp1 = 0;
+    int temp2 = 0;
+
+
+    for (int i = 0; i < 56; i++) {
+        //plain text의 58번째(7) 비트 값 mask로 추출하기
+        //바꿀 비트 index
+        index1 = (IP_table[i] - 1) / 4;
+        bit1 = (IP_table[i] - 1) % 4;
+        //바뀔 비트 index
+        index2 = i / 4;
+        bit2 = i % 4;
+        //temp1 = 바꿀 비트 , temp2 = 바뀔 비트 값
+        temp1 = (key[index1] & (0x08 >> bit1)) >> (3 - bit1);
+        temp2 = (key[index2] & (0x08 >> bit2)) >> (3 - bit2);
+        //plain text의 1번째 비트 값 추출해서 바꾸기
+
+        //1은 OR 0은 AND
+
+        /*if (temp1 == 1) {
+            data[index2] |= (0x08 >> bit2);
+        }
+        else if(temp1 == 0) {
+            data[index2] & (0xF7 >> bit2);
+        }
+        printf("%d", data[index2]);*/
+
+
+        if (temp1) {
+            R_key[index2] |= (0x08 >> bit2);
+        }
+
+    }
+
+   /* for (int k = 0; k < 14; k++) {
+        printf("%hhx", R_key[k]);
+
+    }*/
+
+    return 0;
+}
+
+void shiftKey(uint8_t* L_k, uint8_t* R_k, int i) {
+    unsigned long long temp1 = 0x0000000000000000;
+    unsigned long long temp2 = 0x0000000000000000;
+
+    //8* 은 e08090c0
+    for (int i = 0; i < 8; i++) {
+        temp1 |= (L_k[i] << 56 - (4 * i));
+    }
+
+    for (int i = 0; i < 8; i++) {
+        temp2 |= (R_k[i] << 56 - (4 * i));
+    }
+    printf("%llx", temp1);
+    printf("%d", sizeof(temp1));
+
+}
+
 int main()
 {
 
@@ -294,6 +396,8 @@ int main()
     //IP
     uint8_t text[16] = { 0 };
     uint8_t* data = text;                                       //포인터에 배열할당
+    uint8_t out_[16] = { 0 };
+    uint8_t* out = out_;
 
     //쪼개기
     uint8_t L_block[10] = { 0 };
@@ -305,15 +409,29 @@ int main()
     uint8_t R_Extention[20] = { 0 };
     uint8_t* R_E = R_Extention;
 
-    strToHex(plain_text, data);
-    initialPermutation(data);
-    makeBlock32(data, L, R);
-    extensionPermutation(R,R_E);
+    //key
+    uint8_t* subkey[16][12] = { 0 };
+    uint8_t k[18] = { 0 };
+    uint8_t* K1 = k;
+    //쪼개기
+    uint8_t L_key[10] = { 0 };
+    uint8_t R_key[10] = { 0 };
+    uint8_t* L_k = L_key;
+    uint8_t* R_k = R_key;
 
-    printf("\n");
-    for (i = 0; i < 12; i++) {
-        printf("%hhx", R_E[i]);
-    }
+    //-----key
+    PCpermutation(key, K1);
+    makeBlock28(K1, L_k, R_k);
+    shiftKey(L_k, R_k, 1);
+
+    /*strToHex(plain_text, data);
+    initialPermutation(data, out);
+    makeBlock32(data, L, R);
+    extensionPermutation(R, R_E);*/
+
+    
+
+    
     
 
     //IP
