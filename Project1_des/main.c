@@ -865,11 +865,11 @@ int main()
             p_text[x] = R_block[x - 4];
         }
     }
-    printf("-------------------------------------------------------");
+    printf("복호화 문 : ");
     for (int m = 0; m < 8; m++) {
         printf("%02hhx", p_text[m] );
     }
-    initialPermutation(p_text, p_out);
+    inverterPermutation(p_text, p_out);
     printf("-------------------------------------------------------");
 
     for (int m = 0; m < 8; m++) {
