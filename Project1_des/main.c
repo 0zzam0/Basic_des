@@ -827,7 +827,21 @@ int main()
         printf("%02hhx", ret[m]);
     }
 
+    uint8_t ret_text[16] = { 0 };
+    initialPermutation(ret, ret_text);
+    for (int m = 0; m < 8; m++) {
+        printf("%02hhx", ret_text[m]);
+    }
 
+    for (int n = 0; n < 8; n++) {
+        if (n < 4) {
+            R_block[n] = ret_text[n];
+        }
+        else {
+            L_block[n-4] = ret_text[n];
+        }
+
+    }
 
     //복호화
 
@@ -870,7 +884,7 @@ int main()
         printf("%02hhx", p_text[m] );
     }
     inverterPermutation(p_text, p_out);
-    printf("-------------------------------------------------------");
+    printf("평문 : ");
 
     for (int m = 0; m < 8; m++) {
         printf("%hhx", p_out[m]);
