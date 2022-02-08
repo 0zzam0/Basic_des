@@ -152,6 +152,7 @@ void strToHex(char text[], uint8_t* data) {
     return 0;
 }
 
+//IP 순열
 void initialPermutation(uint8_t* data, uint8_t* out)
 {
     int index1 = 0;
@@ -235,6 +236,8 @@ void makeBlock28(uint8_t* key, uint8_t* L_k, uint8_t* R_k) {
     }
     printf("\n");
 }
+
+//E 순열
 void extensionPermutation(uint8_t* R, uint8_t* R_E) {
     int index1 = 0;
     int bit1 = 0;
@@ -309,6 +312,7 @@ void changeBits(uint8_t* L, uint8_t* R) {
     }
 }
 
+//PC 전치
 void PCpermutation(uint8_t* key, uint8_t* R_key) {
     int index1 = 0;
     int bit1 = 0;
@@ -357,26 +361,94 @@ void PCpermutation(uint8_t* key, uint8_t* R_key) {
 }
 
 void shiftKey(uint8_t* L_k, uint8_t* R_k, int count) {
-    unsigned long long temp1 = 0x0000000000000000;
-    unsigned long long temp2 = 0x0000000000000000;
+    unsigned long long arr1 = 0x0000000000000000;
+    unsigned long long arr2 = 0x0000000000000000;
+
+
 
     //8* 은 e08090c0
     for (int i = 0; i < 8; i++) {
-        temp1 |= (L_k[i] << 56 - (4 * i));
+        arr1 |= (L_k[i] << (56 - (4 * i)));
     }
-    printf("%016llx\n", temp1); //합친 값
-    unsigned long long tmp = (temp1 << shift_key[count])/(1<<28);
-    printf("%016llx\n", tmp);   //오버 비트
-    temp1 = temp1 << shift_key[count];
-    printf("%016llx\n", temp1); //시프트
-    temp1 = temp1 | tmp;    //뒤에 붙임
+    printf("%016llx\n", arr1); //합친 값
+    unsigned long long tmp1 = (arr1 << shift_key[count])/(1<<28);
+    printf("%016llx\n", tmp1);   //오버 비트
+    arr1 = arr1 << shift_key[count];
+    printf("%016llx\n", arr1); //시프트
+    arr1 = arr1 | tmp1;    //뒤에 붙임
+    arr1 = arr1 & 0x0fffffff;
+    printf("%016llx\n", arr1);
 
     for (int i = 0; i < 8; i++) {
-        temp2 |= (R_k[i] << 56 - (4 * i));
+        arr2 |= (R_k[i] << (56 - (4 * i)));
     }
-    printf("%016llx\n", temp1);
-    printf("%d", sizeof(temp1));
+    printf("%016llx\n", arr2); //합친 값
+    unsigned long long tmp2 = (arr2 << shift_key[count]) / (1 << 28);
+    printf("%016llx\n", tmp2);   //오버 비트
+    arr2 = arr2 << shift_key[count];
+    printf("%016llx\n", arr2); //시프트
+    arr2 = arr2 | tmp2;    //뒤에 붙임
+    arr2 = arr2 & 0x0fffffff;
+    printf("%016llx\n", arr2);
 
+    //블럭 합치기
+    arr1 = (arr1 << 28) | arr2;
+    printf("%016llx\n", arr1);
+ 
+    uint8_t arr[7] = { 0 };
+    //배열로 치환
+
+    for (int i = 0; i < 7; i++) {
+        arr[i] = (arr1 >> (48 - (8 * i)))& 0x00000000000000ff;
+        printf("%hhx\n", arr[i]);
+    }
+}
+
+void PC2permutation(uint8_t* key) {
+    int index1 = 0;
+    int bit1 = 0;
+    int index2 = 0;
+    int bit2 = 0;
+    int temp1 = 0;
+    int temp2 = 0;
+
+
+    for (int i = 0; i < 48; i++) {
+        //7바이트(arr)
+        index1 = (PC_2[i] - 1) / 8;
+        bit1 = (PC_2[i] - 1) % 8;
+        //바뀔 비트 index
+        index2 = i / 8;
+        bit2 = i % 8;
+        //temp1 = 바꿀 비트 , temp2 = 바뀔 비트 값
+        temp1 = (key[index1] & (0x80 >> bit1)) >> (7 - bit1);
+        temp2 = (key[index2] & (0x80 >> bit2)) >> (7 - bit2)
+            ];
+        //plain text의 1번째 비트 값 추출해서 바꾸기
+
+        //1은 OR 0은 AND
+
+        /*if (temp1 == 1) {
+            data[index2] |= (0x08 >> bit2);
+        }
+        else if(temp1 == 0) {
+            data[index2] & (0xF7 >> bit2);
+        }
+        printf("%d", data[index2]);*/
+
+
+        if (temp1) {
+            R_key[index2] |= (0x08 >> bit2);
+        }
+
+    }
+
+    /* for (int k = 0; k < 14; k++) {
+         printf("%hhx", R_key[k]);
+
+     }*/
+
+    return 0;
 }
 
 int main()
