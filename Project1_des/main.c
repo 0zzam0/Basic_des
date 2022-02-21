@@ -129,6 +129,7 @@ int shift_key[16] = {
 
 void strToHex(char text[], uint8_t* data) {
     //16진수로 변환
+    //type char --> uint8_t (hex) 
 
 //long data = strtoul(plain_text, NULL, 16);  <---- 최대값 이상
 //9보다 큰 경우 : 알파벳 문자 'A' 이상인 문자로, 'A'를 빼고 10을 더함.
@@ -149,9 +150,9 @@ void strToHex(char text[], uint8_t* data) {
     //    printf("%hhx", data[i]);
     //}
 
+    //1char(8bit) --> 2char(8bit)
     unsigned long long arr = 0x0000000000000000;
 
-    //int로 합치기
     for (int i = 0; i < 16; i++) {
         arr = arr << 4;
         arr |= data[i];
@@ -169,7 +170,7 @@ void strToHex(char text[], uint8_t* data) {
     return 0;
 }
 
-//IP 순열
+//IP 
 void initialPermutation(uint8_t* data, uint8_t* out)
 {
     int index1 = 0;
@@ -188,7 +189,7 @@ void initialPermutation(uint8_t* data, uint8_t* out)
         //바뀔 비트 index
         index2 = i / 8;
         bit2 = i % 8;
-        //temp1 = 바꿀 비트 , temp2 = 바뀔 비트 값
+        //temp1 = original bit, temp2 = change bit
         temp1 = (data[index1] & (0x80 >> bit1)) >> (7 - bit1);
         temp2 = (data[index2] & (0x80 >> bit2)) >> (7 - bit2);
         //plain text의 1번째 비트 값 추출해서 바꾸기
@@ -238,7 +239,7 @@ void inverterPermutation(uint8_t* in, uint8_t* ret)
         //바뀔 비트 index
         index2 = i / 8;
         bit2 = i % 8;
-        //temp1 = 바꿀 비트 , temp2 = 바뀔 비트 값
+        //temp1 = original bit, temp2 = change bit
         temp1 = (in[index1] & (0x80 >> bit1)) >> (7 - bit1);
         temp2 = (in[index2] & (0x80 >> bit2)) >> (7 - bit2);
         //plain text의 1번째 비트 값 추출해서 바꾸기
@@ -298,10 +299,11 @@ void makeBlock28(uint8_t* key, unsigned long long* L_k, unsigned long long* R_k)
         printf("%hhx", R_k[j]);
     }*/
 
+    //1char(8bit) --> 2char(8bit)
     unsigned long long arr = 0x0000000000000000;
     unsigned long long temp1 = 0x0000000000000000;
     unsigned long long temp2 = 0x0000000000000000;
-    //int로 합치기
+    
     for (int i = 0; i < 7; i++) {
         arr = arr << 8;
         arr |= key[i];
@@ -323,7 +325,7 @@ void makeBlock28(uint8_t* key, unsigned long long* L_k, unsigned long long* R_k)
 
 }
 
-//E 순열
+//E
 void extensionPermutation(uint8_t* R, uint8_t* R_E) {
     int index1 = 0;
     int bit1 = 0;
@@ -343,7 +345,7 @@ void extensionPermutation(uint8_t* R, uint8_t* R_E) {
         //바뀔 비트 index
         index2 = i / 8;
         bit2 = i % 8;
-        //temp1 = 바꿀 비트 , temp2 = 바뀔 비트 값
+        //temp1 = original bit, temp2 = change bit
         temp1 = (R[index1] & (0x80 >> bit1)) >> (7 - bit1);
         temp2 = (R[index2] & (0x80 >> bit2)) >> (7 - bit2);
         //plain text의 1번째 비트 값 추출해서 바꾸기
@@ -402,7 +404,7 @@ void s_box(uint8_t* bits, uint8_t* s_result) {
         s_result[k] = 0;
     }
 
-    //배열 int로 합치기
+    //1char(8bit)-- > 2char(8bit)
     unsigned long long arr = 0x0000000000000000;
     for (int i = 0; i < 6; i++) {
         arr = arr << 8;
@@ -413,7 +415,7 @@ void s_box(uint8_t* bits, uint8_t* s_result) {
 
     uint16_t temp1 = 0x0000;
     uint16_t temp2 = 0x0000;
-    //S1
+    //S-box
     for (int j = 0; j < 8; j++) {
 
         temp1 = ((arr >> (42 - (6 * j))) & mask1) >> 4;
@@ -428,35 +430,35 @@ void s_box(uint8_t* bits, uint8_t* s_result) {
         case 0:
 
             s_result[0] = S1[index][bit];
-            printf("%\nd번째 루프 : %x\n",j, S1[index][bit]);
+            printf("\n%dst roof : %x\n",j, S1[index][bit]);
             break;
         case 1:
             s_result[1] = S2[index][bit];
-            printf("%d번째 루프 : %x\n", j, S2[index][bit]);
+            printf("%dnd roof : %x\n", j, S2[index][bit]);
             break;
         case 2:
             s_result[2] = S3[index][bit];
-            printf("%d번째 루프 : %x\n", j, S3[index][bit]);
+            printf("%drd roof : %x\n", j, S3[index][bit]);
             break;
         case 3:
             s_result[3] = S4[index][bit];
-            printf("%d번째 루프 : %x\n", j, S4[index][bit]);
+            printf("%dth roof : %x\n", j, S4[index][bit]);
             break;
         case 4:
             s_result[4] = S5[index][bit];
-            printf("%d번째 루프 : %x\n", j, S5[index][bit]);
+            printf("%dth roof : %x\n", j, S5[index][bit]);
             break;
         case 5:
             s_result[5] = S6[index][bit];
-            printf("%d번째 루프 : %x\n", j, S6[index][bit]);
+            printf("%dth roof : %x\n", j, S6[index][bit]);
             break;
         case 6:
             s_result[6] = S7[index][bit];
-            printf("%d번째 루프 : %x\n", j, S7[index][bit]);
+            printf("%dth roof : %x\n", j, S7[index][bit]);
             break;
         case 7:
             s_result[7] = S8[index][bit];
-            printf("%d번째 루프 : %x\n", j, S8[index][bit]);
+            printf("%dth roof : %x\n", j, S8[index][bit]);
             break;
         }
 
@@ -489,7 +491,7 @@ void Ppermutation(uint8_t* s_result, uint8_t* s_R) {
         //바뀔 비트 index
         index2 = i / 4;
         bit2 = i % 4;
-        //temp1 = 바꿀 비트 , temp2 = 바뀔 비트 값
+        //temp1 = original bit, temp2 = change bit
         temp1 = (s_result[index1] & (0x08 >> bit1)) >> (3 - bit1);
         temp2 = (s_result[index2] & (0x08 >> bit2)) >> (3 - bit2);
         //plain text의 1번째 비트 값 추출해서 바꾸기
@@ -524,7 +526,7 @@ void Ppermutation(uint8_t* s_result, uint8_t* s_R) {
         s_R[i] = 0;
     }
 
-    ////배열로 나누기
+    //change int -> array
     for (int i = 0; i < 4; i++) {
         s_R[i] = (arr >> (24 - (8 * i))) & 0x000000ff;
     }
@@ -572,7 +574,7 @@ void PCpermutation(uint8_t* key, uint8_t* R_key) {
         //바뀔 비트 index
         index2 = i / 8;
         bit2 = i % 8;
-        //temp1 = 바꿀 비트 , temp2 = 바뀔 비트 값
+        //temp1 = original bit, temp2 = change bit
         temp1 = (key[index1] & (0x80 >> bit1)) >> (7 - bit1);
         temp2 = (key[index2] & (0x80 >> bit2)) >> (7 - bit2);
         //plain text의 1번째 비트 값 추출해서 바꾸기
@@ -613,7 +615,7 @@ void PC2permutation(uint8_t* key, uint8_t* result) {
         //바뀔 비트 index
         index2 = i / 8;
         bit2 = i % 8;
-        //temp1 = 바꿀 비트 , temp2 = 바뀔 비트 값
+        //temp1 = original bit, temp2 = change bit
         temp1 = (key[index1] & (0x80 >> bit1)) >> (7 - bit1);
         temp2 = (key[index2] & (0x80 >> bit2)) >> (7 - bit2);
         //plain text의 1번째 비트 값 추출해서 바꾸기
@@ -702,7 +704,7 @@ int main()
     //input plainText
     //printf("Input plain text : \n");
     //scanf("%s", &plain_text);
-    printf("**********평문 : ");
+    printf("**********plain text : ");
     for (int i = 0; i < 16; i++) {
         printf("%c", plain_text[i]);
     }
@@ -755,7 +757,7 @@ int main()
     PCpermutation(k, pc_k);
     makeBlock28(pc_k, &L_k, &R_k);
 
-    //16개 서브키 만들기
+    //make subkey
 
     for (int j = 0; j < 16; j++) {
         shiftKey(&L_k, &R_k, arr, j);
@@ -772,21 +774,21 @@ int main()
         printf("\n");
     }*/
 
-    //암호화
+    //encryption
     strToHex(plain_text, data);
     initialPermutation(data, out);
     makeBlock32(out, L, R);
     
     printf("\n");
     for (int k = 0; k < 16; k++) {
-        printf("\n=====암호화 %d라운드 ====\nL : ", k);
+        printf("\n=====encryption %dround ====\nL : ", k);
         //L
-        printf("\nLeft 블록 : ");
+        printf("\nLeft block : ");
         for (int k = 0; k < 4; k++) {
             printf("%02hhx", L[k]);
         }
         //L
-        printf(", Right 블록 : ");
+        printf(", Right block : ");
         for (int k = 0; k < 4; k++) {
             printf("%02hhx", R[k]);
 
@@ -808,7 +810,7 @@ int main()
         printf("\n");
     }
 
-    //블록 합치기
+    //sum block
     for (int x = 0; x < 8; x++) {
         if (x < 4) {
             in[x] = R_block[x];
@@ -821,29 +823,29 @@ int main()
 
 
 
-    //역초기순열
+    //역IP
     inverterPermutation(in, ret);
     
 
-    printf("**********암호문 : ");
+    printf("**********chiper text : ");
     for (int m = 0; m < 8; m++) {
         printf("%02hhx", ret[m]);
     }
     printf("*******************\n");
 
-    //복호화
+    //decryption
 
     for (int k = 15; k >= 0; k--) {
 
 
-        printf("\n=====복호화 %d라운드 ====\nL : ", 16 - k);
+        printf("\n=====decryption %dround ====", 16 - k);
         //L
-        printf("\nLeft 블록 : ");
+        printf("\nLeft block : ");
         for (int k = 0; k < 4; k++) {
             printf("%02hhx", L[k]);
         }
         //L
-        printf(", Right 블록 : ");
+        printf(", Right block : ");
         for (int k = 0; k < 4; k++) {
             printf("%02hhx", R[k]);
 
@@ -868,7 +870,7 @@ int main()
 
     }
 
-    //블록 합치기
+    //sum block
     for (int x = 0; x < 8; x++) {
         if (x < 4) {
             p_text[x] = L_block[x];
@@ -880,19 +882,19 @@ int main()
   
     inverterPermutation(p_text, p_out);
 
-    printf("**********평문 : ");
+    printf("**********plain text : ");
     for (int i = 0; i < 16; i++) {
         printf("%c", plain_text[i]);
     }
     printf("****************\n");
 
-    printf("**********암호문 : ");
+    printf("**********chiper text : ");
     for (int m = 0; m < 8; m++) {
         printf("%02hhx", ret[m]);
     }
     printf("*******************\n");
 
-    printf("**********복호문 : ");
+    printf("**********decrypted text : ");
 
     for (int m = 0; m < 8; m++) {
         printf("%hhx", p_out[m]);
